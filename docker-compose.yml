@@ -1,0 +1,40 @@
+version: '3'
+services:
+
+   db-server:
+      image: postgres
+      hostname: postgres-server
+      environment:
+          POSTGRES_USER: dbadmin
+          POSTGRES_PASSWORD: Aa123456
+          POSTGRES_DB: my_app
+      volumes:
+          - /db_data/test:/var/lib/postgresql/data_test
+      extra_hosts:
+          app-server: 10.10.10.3
+      networks:
+          my_app_net:
+              ipv4_address: 10.10.10.2
+
+   app-server:
+       image: centos/python-35-centos7
+       hostname: app-server
+       depends_on:
+           - db-server
+       entrypoint:
+           - /bin/bash
+       stdin_open: true
+       tty: true
+       extra_hosts:
+          db-server: 10.10.10.2
+       networks:
+          my_app_net:
+              ipv4_address: 10.10.10.3
+
+networks:
+    my_app_net:
+        driver: bridge
+        ipam:
+          config:
+            - subnet: 10.10.10.0/24
+
